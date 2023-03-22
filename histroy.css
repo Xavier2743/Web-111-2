@@ -1,0 +1,15 @@
+main {
+    display: grid;
+    gap: 1rem;
+    margin: 9.5rem 4rem 4rem;
+}
+
+article {
+    background-color: hsla(215, 5%, 10%, 1);
+    border-radius: .5rem;
+    padding: 2rem;
+    /* height: 20vh; */
+}
+
+article > h1 {
+}
