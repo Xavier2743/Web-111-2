@@ -9,3 +9,7 @@ article {
     border-radius: .5rem;
     padding: 2rem;
 }
+
+h1+p {
+    margin-top: 0;
+}
