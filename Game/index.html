@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Challenging Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+    <!-- <button id="nextLevelButton">Next Level</button> -->
+
+    <script>
+        // Initialize the game canvas
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game variables
+        let x = canvas.width / 2;
+        let y = canvas.height - 30;
+        let dx = 2;
+        let dy = -2;
+        const ballRadius = 10;
+        const paddleWidth = 80;
+        const paddleHeight = 10;
+        let paddleX = (canvas.width - paddleWidth) / 2;
+        let rightPressed = false;
+        let leftPressed = false;
+        let score = 0;
+        let level = 1;
+        let ballSpeedMultiplier = 1;
+
+        // Obstacle variables
+        const obstacleWidth = 80;
+        const obstacleHeight = 10;
+        const obstacleRowCount = 3;
+        const obstacleColumnCount = 5;
+        const obstaclePadding = 10;
+        const obstacleOffsetTop = 30;
+        const obstacleOffsetLeft = 30;
+        const obstacles = [];
+
+        // Create obstacles
+        function createObstacles() {
+            for (let c = 0; c < obstacleColumnCount; c++) {
+                obstacles[c] = [];
+                for (let r = 0; r < obstacleRowCount; r++) {
+                    obstacles[c][r] = { x: 0, y: 0, status: 1 };
+                }
+            }
+        }
+
+        // Initialize level two obstacles
+        function initLevelTwo() {
+            createObstacles();
+
+            for (let c = 0; c < obstacleColumnCount; c++) {
+                for (let r = 0; r < obstacleRowCount; r++) {
+                    obstacles[c][r].status = 1;
+                }
+            }
+        }
+
+        // Initialize level three obstacles
+        function initLevelThree() {
+            createObstacles();
+
+            for (let c = 0; c < obstacleColumnCount; c++) {
+                for (let r = 0; r < obstacleRowCount; r++) {
+                    obstacles[c][r].status = 1;
+                }
+            }
+        }
+
+        // Keyboard event listeners
+        document.addEventListener("keydown", keyDownHandler);
+        document.addEventListener("keyup", keyUpHandler);
+
+        // Keyboard input handlers
+        function keyDownHandler(event) {
+            if (event.key === "Right" || event.key === "ArrowRight") {
+                rightPressed = true;
+            } else if (event.key === "Left" || event.key === "ArrowLeft") {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(event) {
+            if (event.key === "Right" || event.key === "ArrowRight") {
+                rightPressed = false;
+            } else if (event.key === "Left" || event.key === "ArrowLeft") {
+                leftPressed = false;
+            }
+        }
+
+        // Collision detection between ball and obstacles
+        function collisionDetection() {
+            for (let c = 0; c < obstacleColumnCount; c++) {
+                for (let r = 0; r < obstacleRowCount; r++) {
+                    const obstacle = obstacles[c][r];
+                    if (obstacle.status === 1) {
+                        if (
+                            x > obstacle.x &&
+                            x < obstacle.x + obstacleWidth &&
+                            y > obstacle.y &&
+                            y < obstacle.y + obstacleHeight
+                        ) {
+                            dy = -dy;
+                            obstacle.status = 0;
+                            score++;
+                            if (score === obstacleRowCount * obstacleColumnCount) {
+                                if (level === 1) {
+                                    level++;
+                                    ballSpeedMultiplier += 0.75;
+                                    initLevelTwo();
+                                    resetGame();
+                                } else if (level === 2) {
+                                    level++;
+                                    ballSpeedMultiplier += 0.75;
+                                    initLevelThree();
+                                    resetGame();
+                                } else {
+                                    // Player wins the game
+                                    alert("Congratulations! You won the game!");
+                                    document.location.reload();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Draw the ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw the paddle
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "blue";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw the obstacles
+        function drawObstacles() {
+            for (let c = 0; c < obstacleColumnCount; c++) {
+                for (let r = 0; r < obstacleRowCount; r++) {
+                    if (obstacles[c][r].status === 1) {
+                        const obstacleX =
+                            c * (obstacleWidth + obstaclePadding) + obstacleOffsetLeft;
+                        const obstacleY =
+                            r * (obstacleHeight + obstaclePadding) + obstacleOffsetTop;
+                        obstacles[c][r].x = obstacleX;
+                        obstacles[c][r].y = obstacleY;
+                        ctx.beginPath();
+                        ctx.rect(obstacleX, obstacleY, obstacleWidth, obstacleHeight);
+                        ctx.fillStyle = "green";
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        // Reset the game
+        function resetGame() {
+            x = canvas.width / 2;
+            y = canvas.height - 30;
+            dx = (Math.random() - 0.5) * 4 * ballSpeedMultiplier;
+            dy = -2 * ballSpeedMultiplier;
+            paddleX = (canvas.width - paddleWidth) / 2;
+            rightPressed = false;
+            leftPressed = false;
+        }
+
+        // // Button event listener
+        // const nextLevelButton = document.getElementById("nextLevelButton");
+        // nextLevelButton.addEventListener("click", function() {
+        //     if (level === 1) {
+        //         level++;
+        //         ballSpeedMultiplier += 0.5;
+        //         initLevelTwo();
+        //     } else if (level === 2) {
+        //         level++;
+        //         ballSpeedMultiplier += 0.5;
+        //         initLevelThree();
+        //     }
+        //     resetGame();
+        // });
+
+        // Game loop
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the ball
+            drawBall();
+
+            // Draw the paddle
+            drawPaddle();
+
+            // Draw the obstacles
+            drawObstacles();
+
+            // Collision detection
+            collisionDetection();
+
+            // Move the paddle
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 7;
+            } else if (leftPressed && paddleX > 0) {
+                paddleX -= 7;
+            }
+
+            // Move the ball
+            x += dx;
+            y += dy;
+
+            // Bounce off the walls
+            if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+                dx = -dx;
+            }
+            if (y + dy < ballRadius) {
+                dy = -dy;
+            } else if (y + dy > canvas.height - ballRadius) {
+                // Check if the ball hits the paddle
+                if (x > paddleX && x < paddleX + paddleWidth) {
+                    dy = -dy;
+                } else {
+                    // Ball missed the paddle, reset the game
+                    resetGame();
+                    score = 0;
+                    level = 1;
+                    ballSpeedMultiplier = 1;
+                    createObstacles();
+                }
+            }
+
+            // Update the score and level display
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Score: " + score, 8, 20);
+            ctx.fillText("Level: " + level, canvas.width - 75, 20);
+
+            requestAnimationFrame(draw);
+        }
+
+        createObstacles();
+        draw();
+    </script>
+</body>
+</html>
